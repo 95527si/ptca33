@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>멸종 위기 동물 카드 나누기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+:root{
+  --paper:#EFF3EE;
+  --surface:#FFFFFF;
+  --ink:#1E3A28;
+  --ink-soft:#5B7063;
+  --band:#C3E4E8;
+  --band-deep:#6FB2BC;
+  --mark:#F3C34A;
+  --line:#D6DED7;
+  --shadow:0 1px 0 #C9D3CA;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:28px 20px 64px}
+
+/* ---------- 기준 정하기 ---------- */
+.setup{padding:8px 0 26px;border-bottom:2px solid var(--ink)}
+.setup h1{
+  font-size:1.05rem;font-weight:600;letter-spacing:-.01em;
+  margin:0 0 14px;color:var(--ink-soft);
+}
+.blank{
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;
+  font-size:clamp(1.4rem,4.4vw,2rem);font-weight:700;letter-spacing:-.03em;
+}
+.blank input{
+  font:inherit;color:var(--ink);
+  border:none;border-bottom:3px solid var(--band-deep);
+  background:transparent;padding:2px 8px 4px;
+  min-width:min(320px,62vw);flex:1 1 220px;border-radius:0;
+}
+.blank input::placeholder{color:#A8BBAE;font-weight:600}
+.blank input:focus{outline:none;border-bottom-color:var(--mark);background:#FFFDF4}
+.blank span{white-space:nowrap}
+.hint{margin:12px 0 0;font-size:.9rem;color:var(--ink-soft)}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.examples button{
+  font:inherit;font-size:.86rem;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);
+  border-radius:999px;padding:5px 13px;cursor:pointer;
+}
+.examples button:hover{border-color:var(--band-deep);color:var(--ink)}
+.examples .mine{background:#FFF7DE;border-color:#EBD79A;color:var(--ink)}
+.examples .mine .x{
+  border:none;background:none;color:#9A7F2E;cursor:pointer;
+  font-size:.95rem;line-height:1;padding:0 0 0 6px;
+}
+.examples .mine .x:hover{color:#5E4B10}
+.addrow{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.addrow input{
+  font:inherit;font-size:.9rem;padding:6px 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  flex:1 1 190px;min-width:0;
+}
+.addrow input:focus{outline:none;border-color:var(--band-deep)}
+.addrow button{
+  font:inherit;font-size:.88rem;font-weight:600;border-radius:999px;padding:6px 15px;
+  border:1px solid var(--ink);background:var(--ink);color:#EAF2EB;cursor:pointer;
+}
+.addrow button:hover{background:#2C5138}
+.chk h4{
+  margin:16px 0 6px;font-size:1rem;padding-bottom:5px;border-bottom:2px solid var(--band);
+}
+.chk h4:first-of-type{margin-top:8px}
+.chk dl{margin:0}
+.chk dt{font-weight:700;font-size:.95rem;margin-top:9px}
+.chk dd{margin:1px 0 0;font-size:.9rem;color:var(--ink-soft);line-height:1.62}
+.chk .none{color:#9DAFA2;font-size:.9rem;margin-top:6px}
+
+/* ---------- 칸 ---------- */
+.bins{
+  display:grid;gap:14px;margin:24px 0 0;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+}
+.bin{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  min-height:170px;display:flex;flex-direction:column;overflow:hidden;
+}
+.bin.target{border-color:var(--mark);background:#FFFDF4;box-shadow:0 0 0 3px #FBE9B8}
+.bin-head{
+  background:var(--band);display:flex;align-items:center;gap:6px;padding:9px 10px 9px 13px;
+}
+.bin-head input{
+  font:inherit;font-weight:700;font-size:1.02rem;color:var(--ink);
+  background:transparent;border:none;padding:2px 0;flex:1;min-width:0;
+}
+.bin-head input::placeholder{color:#5E97A0;font-weight:600}
+.bin-head input:focus{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.count{font-size:.82rem;color:#3D7079;font-weight:600;flex-shrink:0}
+.kill{
+  background:none;border:none;color:#3D7079;cursor:pointer;
+  font-size:1.15rem;line-height:1;padding:2px 4px;border-radius:6px;flex-shrink:0;
+}
+.kill:hover{background:#A9D6DD}
+.bin-body{padding:11px;display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start;flex:1}
+.bin-empty{color:#9DAFA2;font-size:.87rem;margin:auto;text-align:center;padding:6px}
+
+.addbin{
+  border:2px dashed var(--line);border-radius:14px;background:transparent;
+  color:var(--ink-soft);font:inherit;font-size:.95rem;cursor:pointer;min-height:170px;
+}
+.addbin:hover{border-color:var(--band-deep);color:var(--ink);background:#F7FAF7}
+
+/* ---------- 카드 ---------- */
+.tray{margin-top:30px}
+.tray-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.tray-head h2{font-size:1.02rem;font-weight:700;margin:0}
+.tray-head em{font-style:normal;color:var(--ink-soft);font-size:.9rem}
+.tray-body{display:flex;flex-wrap:wrap;gap:8px;min-height:60px}
+.tray-done{color:var(--ink-soft);font-size:.92rem;padding:14px 0}
+
+.card{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:8px 9px 8px 12px;cursor:pointer;font:inherit;font-size:.94rem;font-weight:600;
+  color:var(--ink);box-shadow:var(--shadow);
+}
+.card:hover{border-color:var(--band-deep)}
+.card:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.card.picked{background:#FFF7DE;border-color:var(--mark);box-shadow:0 0 0 3px #FBE9B8}
+.card .info{
+  border:none;background:#EDF3EE;color:var(--ink-soft);
+  width:20px;height:20px;border-radius:50%;font-size:.76rem;font-weight:700;
+  cursor:pointer;flex-shrink:0;line-height:20px;padding:0;
+}
+.card .info:hover{background:var(--band);color:var(--ink)}
+
+/* ---------- 안내줄 ---------- */
+.bar{
+  position:sticky;bottom:0;margin:26px -20px -64px;padding:13px 20px calc(13px + env(safe-area-inset-bottom));
+  background:var(--ink);color:#EAF2EB;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+}
+.bar p{margin:0;flex:1;font-size:.92rem;min-width:180px}
+.bar button{
+  font:inherit;font-weight:600;font-size:.92rem;border-radius:9px;padding:9px 16px;cursor:pointer;border:none;
+}
+.btn-main{background:var(--mark);color:#3A2E08}
+.btn-main:disabled{background:#4A5F50;color:#8FA396;cursor:not-allowed}
+.btn-ghost{background:transparent;color:#BFD3C4;border:1px solid #4A5F50}
+.btn-ghost:hover{color:#fff;border-color:#7E9686}
+
+/* ---------- 겹창 ---------- */
+dialog{
+  border:none;border-radius:16px;padding:0;max-width:520px;width:calc(100% - 36px);
+  color:var(--ink);box-shadow:0 18px 50px rgba(20,40,26,.28);
+}
+dialog::backdrop{background:rgba(24,44,30,.45)}
+.dlg{padding:22px 24px 20px}
+.dlg h3{margin:0 0 4px;font-size:1.3rem;letter-spacing:-.02em}
+.dlg p{margin:10px 0 0;font-size:.97rem;line-height:1.72}
+.dlg .close{
+  margin-top:20px;width:100%;background:var(--band);border:none;color:var(--ink);
+  font:inherit;font-weight:700;padding:11px;border-radius:10px;cursor:pointer;
+}
+.dlg .close:hover{background:var(--band-deep);color:#fff}
+#resultImg{
+  display:block;width:100%;height:auto;margin-top:14px;
+  border:1px solid var(--line);border-radius:10px;max-height:46vh;object-fit:contain;
+  object-position:top;background:#F5F8F5;
+}
+.imghint{margin:8px 0 0;font-size:.84rem;color:var(--ink-soft);text-align:center}
+.dlg-row{display:flex;gap:9px;margin-top:16px}
+.dlg-row button{flex:1;font:inherit;font-weight:700;padding:11px;border-radius:10px;cursor:pointer;border:none}
+.dlg-row .copy{background:var(--mark);color:#3A2E08}
+.dlg-row .back{background:#EDF3EE;color:var(--ink);border:1px solid var(--line)}
+
+.past{margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.past h2{font-size:.95rem;margin:0 0 8px;color:var(--ink-soft)}
+.past li{font-size:.9rem;color:var(--ink-soft);margin-bottom:5px;line-height:1.6}
+.past ul{margin:0;padding-left:18px}
+
+@media (max-width:520px){
+  .wrap{padding:20px 14px 60px}
+  .bar{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}
+  .bins{grid-template-columns:1fr 1fr;gap:10px}
+  .bin,.addbin{min-height:140px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .card{transition:background .12s ease,border-color .12s ease,box-shadow .12s ease}
+  .bin{transition:border-color .12s ease,background .12s ease}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="setup">
+    <h1>멸종 위기 동물 카드 나누기</h1>
+    <div class="blank">
+      <span>우리는</span>
+      <input id="criterion" placeholder="사는 곳" aria-label="나누는 기준" maxlength="20">
+      <span>(으)로 나눌 거예요.</span>
+    </div>
+    <p class="hint">기준을 정하고, 아래 칸에 이름을 붙인 다음 동물을 옮겨 보세요.</p>
+    <div class="examples" id="examples"></div>
+    <div class="addrow">
+      <input id="newCrit" placeholder="내가 생각한 기준 적기" maxlength="20" aria-label="새 기준 적기">
+      <button id="addCrit">기준 추가</button>
+    </div>
+  </section>
+
+  <div class="bins" id="bins"></div>
+
+  <section class="tray">
+    <div class="tray-head">
+      <h2>아직 나누지 않은 동물</h2>
+      <em id="left"></em>
+    </div>
+    <div class="tray-body" id="tray"></div>
+  </section>
+
+  <section class="past" id="past" hidden>
+    <h2>지금까지 나눠 본 기준</h2>
+    <ul id="pastList"></ul>
+  </section>
+
+  <div class="bar">
+    <p id="status">동물을 눌러 고른 다음, 넣고 싶은 칸을 누르세요.</p>
+    <button class="btn-ghost" id="resetBtn">처음으로</button>
+    <button class="btn-ghost" id="checkBtn">확인하기</button>
+    <button class="btn-main" id="doneBtn">결과 정리하기</button>
+  </div>
+</div>
+
+<dialog id="infoDlg"><div class="dlg">
+  <h3 id="infoName"></h3>
+  <p id="infoText"></p>
+  <button class="close" id="infoClose">닫기</button>
+</div></dialog>
+
+<dialog id="checkDlg"><div class="dlg">
+  <h3>카드를 다시 보며 확인해요</h3>
+  <p id="checkLead"></p>
+  <div class="chk" id="checkBody"></div>
+  <button class="close" id="checkClose">닫기</button>
+</div></dialog>
+
+<dialog id="resultDlg"><div class="dlg">
+  <h3 id="resultTitle"></h3>
+  <img id="resultImg" alt="나눈 결과 그림">
+  <p class="imghint">그림을 꾹 눌러서 저장할 수도 있어요.</p>
+  <div class="dlg-row">
+    <button class="copy" id="resultSave">이미지로 저장하기</button>
+    <button class="back" id="resultCopy">글자 복사하기</button>
+  </div>
+  <div class="dlg-row">
+    <button class="back" id="resultBack">더 나누기</button>
+    <button class="back" id="resultNew">새 기준으로 다시 나누기</button>
+  </div>
+</div></dialog>
+
+<script>
+const ANIMALS = [
+ ["늑대","옛날에는 우리나라 산에 흔했지만 사냥과 덫 때문에 줄었어요. 지금 우리나라 야생에는 없고 대전 동물원에 몇 마리가 있어요."],
+ ["수달","깨끗한 물에서만 살 수 있어요. 가죽을 얻으려는 사냥과 물 오염으로 살 곳을 잃었어요."],
+ ["자이언트 판다","대나무가 많은 산에 살며 하루 10kg 넘게 먹어요. 기후 변화로 대나무 숲이 사라지고 있어요."],
+ ["대륙 사슴","꽃사슴이라고 불려요. 산에서 나뭇잎과 풀을 먹고 살았지만 사냥으로 우리나라 야생에서는 사라졌어요."],
+ ["듀공","바다에 사는 초식 동물이에요. 몸이 커서 느리기 때문에 배에 부딪히고, 가죽과 기름 때문에 사냥당했어요."],
+ ["아홀로틀","멕시코에 사는 도롱뇽이에요. 건물이 많이 생기고 물이 더러워지면서 수가 빠르게 줄었어요."],
+ ["황금들창코원숭이","중국의 높은 산에 살아요. 여행객이 늘고, 약과 모피를 얻으려는 사냥으로 줄어들었어요."],
+ ["담비","깊은 산에 살아요. 자기 몸보다 열 배나 큰 고라니도 사냥하는 포식자예요. 숲이 파괴되고 모피 사냥으로 줄었어요."],
+ ["참수리","겨울이 되면 우리나라로 오는 철새예요. 바닷가 절벽에 둥지를 틀고 물고기를 먹어요. 세계에 3~4천 마리만 남았어요."],
+ ["붉은 박쥐","엄지손가락만 한 작은 박쥐예요. 동굴에서 겨울잠을 자는데 동굴이 파괴되고 있어요."],
+ ["치타","땅에서 가장 빠른 동물이에요. 100년 동안 90% 넘게 사라졌고 지금은 아프리카 일부에만 살아요."],
+ ["사향노루","좋은 향기가 나는 동물이에요. 향수를 만들려는 사냥으로 지금은 강원도에 50여 마리만 남았어요."],
+ ["벵골 호랑이","인도와 방글라데시의 습지에 살아요. 기후 변화로 습지가 잠기고, 가죽 때문에 사냥당하고 있어요."],
+ ["아메리칸 피카","겨울잠을 자지 않아 1년 내내 먹이를 구해요. 지구가 더워지면서 시원한 산 꼭대기로 올라가고 있어요."],
+ ["검은 코뿔소","아프리카에 사는 초식 동물이에요. 뿔을 얻으려는 사냥으로 세계에 3000여 마리만 남았어요."],
+ ["바다 거북","해변 모래 속에 알을 낳아요. 지구가 따뜻해지면서 수컷이 거의 태어나지 않게 되었어요."],
+ ["반달가슴곰","가슴에 반달 모양 무늬가 있어요. 웅담을 얻으려는 사냥으로 줄었고 지금은 지리산 등에 조금 살아요."],
+ ["나무늘보","중앙·남아메리카 열대 숲의 나무 위에서 혼자 지내요. 기후 변화로 숲이 파괴되고 있어요."],
+ ["여우","밤에 활동하는 동물이에요. 사냥과 쥐약 때문에 우리나라에서 사라졌고, 소백산에서 다시 살게 하려고 노력하고 있어요."],
+ ["레서판다","히말라야처럼 높은 산에 사는 야행성 동물이에요. 대나무가 줄면서 세계에 1만여 마리만 남았어요."],
+ ["대왕고래","세계에서 가장 큰 동물이에요. 빙하가 녹아 먹이가 줄고, 미세 플라스틱을 함께 먹게 되었어요."],
+ ["북극곰","빙하 위에서 바다표범을 사냥해요. 빙하가 녹아 있는 시간이 길어져 먹이를 먹지 못하는 일이 많아졌어요."],
+ ["수리부엉이","우리나라에서 가장 큰 부엉이 중 하나예요. 숲의 나무가 잘리면서 살 곳을 잃었어요."],
+ ["남방큰돌고래","제주도 앞바다에 110여 마리가 살아요. 바다 쓰레기와 낚시 도구 때문에 다치거나 죽어요."],
+ ["장수하늘소","우리나라에서 가장 보기 힘든 딱정벌레예요. 아주 오래된 나무에서만 살 수 있어요."]
+];
+
+const EXAMPLES = ["사는 곳","먹이","몸의 크기","우리나라에 사는지","수가 줄어든 까닭","내가 본 적 있는지"];
+
+let bins = [];          // {id, name, cards:[idx]}
+let tray = ANIMALS.map((_, i) => i);
+let picked = null;      // 고른 카드 idx
+let binSeq = 0;
+let history = [];
+
+const $ = id => document.getElementById(id);
+
+function newBin(name = "") {
+  return { id: ++binSeq, name, cards: [] };
+}
+
+function init() {
+  bins = [newBin(), newBin()];
+  tray = ANIMALS.map((_, i) => i);
+  picked = null;
+  render();
+}
+
+/* ---------- 그리기 ---------- */
+function render() {
+  const binBox = $("bins");
+  binBox.innerHTML = "";
+
+  bins.forEach(b => {
+    const el = document.createElement("div");
+    el.className = "bin";
+    el.dataset.bin = b.id;
+
+    const head = document.createElement("div");
+    head.className = "bin-head";
+    const nameIn = document.createElement("input");
+    nameIn.value = b.name;
+    nameIn.placeholder = "칸 이름";
+    nameIn.maxLength = 14;
+    nameIn.setAttribute("aria-label", "칸 이름");
+    nameIn.addEventListener("input", e => { b.name = e.target.value; updateCounts(); });
+    nameIn.addEventListener("click", e => e.stopPropagation());
+    head.appendChild(nameIn);
+
+    const cnt = document.createElement("span");
+    cnt.className = "count";
+    cnt.textContent = b.cards.length ? b.cards.length + "개" : "";
+    head.appendChild(cnt);
+
+    if (bins.length > 2) {
+      const kill = document.createElement("button");
+      kill.className = "kill";
+      kill.innerHTML = "&times;";
+      kill.title = "칸 지우기";
+      kill.setAttribute("aria-label", (b.name || "이름 없는") + " 칸 지우기");
+      kill.addEventListener("click", e => {
+        e.stopPropagation();
+        tray = tray.concat(b.cards);
+        bins = bins.filter(x => x.id !== b.id);
+        render();
+      });
+      head.appendChild(kill);
+    }
+    el.appendChild(head);
+
+    const body = document.createElement("div");
+    body.className = "bin-body";
+    if (!b.cards.length) {
+      const p = document.createElement("p");
+      p.className = "bin-empty";
+      p.textContent = "여기에 넣어요";
+      body.appendChild(p);
+    } else {
+      b.cards.forEach(i => body.appendChild(makeCard(i, b.id)));
+    }
+    el.appendChild(body);
+
+    el.addEventListener("click", () => dropInto(b.id));
+    el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("target"); });
+    el.addEventListener("dragleave", () => el.classList.remove("target"));
+    el.addEventListener("drop", e => {
+      e.preventDefault(); el.classList.remove("target");
+      const i = +e.dataTransfer.getData("text/plain");
+      if (!isNaN(i)) { picked = i; dropInto(b.id); }
+    });
+    binBox.appendChild(el);
+  });
+
+  if (bins.length < 4) {
+    const add = document.createElement("button");
+    add.className = "addbin";
+    add.textContent = "+ 칸 늘리기";
+    add.addEventListener("click", () => { bins.push(newBin()); render(); });
+    binBox.appendChild(add);
+  }
+
+  const trayBox = $("tray");
+  trayBox.innerHTML = "";
+  if (!tray.length) {
+    const p = document.createElement("p");
+    p.className = "tray-done";
+    p.textContent = "모든 동물을 다 나눴어요.";
+    trayBox.appendChild(p);
+  } else {
+    tray.forEach(i => trayBox.appendChild(makeCard(i, null)));
+  }
+  trayBox.addEventListener("dragover", e => e.preventDefault());
+  trayBox.addEventListener("drop", e => {
+    e.preventDefault();
+    const i = +e.dataTransfer.getData("text/plain");
+    if (!isNaN(i)) { picked = i; dropInto(null); }
+  });
+
+  updateCounts();
+  $("doneBtn").disabled = tray.length === ANIMALS.length;
+}
+
+function makeCard(i, binId) {
+  const c = document.createElement("div");
+  c.className = "card" + (picked === i ? " picked" : "");
+  c.tabIndex = 0;
+  c.draggable = true;
+  c.dataset.idx = i;
+
+  const label = document.createElement("span");
+  label.textContent = ANIMALS[i][0];
+  c.appendChild(label);
+
+  const info = document.createElement("button");
+  info.className = "info";
+  info.textContent = "?";
+  info.setAttribute("aria-label", ANIMALS[i][0] + " 설명 보기");
+  info.addEventListener("click", e => { e.stopPropagation(); showInfo(i); });
+  c.appendChild(info);
+
+  const choose = e => {
+    e.stopPropagation();
+    if (picked === i) { picked = null; }
+    else if (binId !== null) { picked = i; dropInto(null); return; }
+    else { picked = i; }
+    render();
+  };
+  c.addEventListener("click", choose);
+  c.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(e); }
+  });
+  c.addEventListener("dragstart", e => e.dataTransfer.setData("text/plain", String(i)));
+  return c;
+}
+
+function dropInto(binId) {
+  if (picked === null) return;
+  const i = picked;
+  tray = tray.filter(x => x !== i);
+  bins.forEach(b => { b.cards = b.cards.filter(x => x !== i); });
+  if (binId === null) tray.push(i);
+  else bins.find(b => b.id === binId).cards.push(i);
+  tray.sort((a, b) => a - b);
+  picked = null;
+  render();
+}
+
+function updateCounts() {
+  $("left").textContent = tray.length + "마리 남음";
+  $("status").textContent = picked !== null
+    ? "‘" + ANIMALS[picked][0] + "’을(를) 골랐어요. 넣고 싶은 칸을 누르세요."
+    : "동물을 눌러 고른 다음, 넣고 싶은 칸을 누르세요.";
+}
+
+/* ---------- 겹창 ---------- */
+function showInfo(i) {
+  $("infoName").textContent = ANIMALS[i][0];
+  $("infoText").textContent = ANIMALS[i][1];
+  $("infoDlg").showModal();
+}
+$("infoClose").addEventListener("click", () => $("infoDlg").close());
+
+function buildResult() {
+  const crit = $("criterion").value.trim() || "(기준을 적지 않았어요)";
+  let out = "기준: " + crit + "\n\n";
+  bins.forEach(b => {
+    const nm = b.name.trim() || "이름 없는 칸";
+    out += "· " + nm + " (" + b.cards.length + "마리)\n";
+    out += "   " + (b.cards.length ? b.cards.map(i => ANIMALS[i][0]).join(", ") : "없음") + "\n";
+  });
+  if (tray.length) {
+    out += "\n· 아직 나누지 않음 (" + tray.length + "마리)\n";
+    out += "   " + tray.map(i => ANIMALS[i][0]).join(", ") + "\n";
+  }
+  return { crit, out };
+}
+
+/* ---------- 결과 그림 ---------- */
+let lastText = "";
+let lastCanvas = null;
+
+const KFONT = "Pretendard,'Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, hh, r) {
+    r = Math.min(r, w / 2, hh / 2);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + hh, r);
+    this.arcTo(x + w, y + hh, x, y + hh, r);
+    this.arcTo(x, y + hh, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
+function wrapText(ctx, text, maxW) {
+  const out = [];
+  let line = "";
+  for (const ch of text) {
+    if (ctx.measureText(line + ch).width > maxW && line) { out.push(line); line = ""; }
+    line += ch;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+function drawResult(crit) {
+  const W = 1000, PAD = 56, INNER = W - PAD * 2;
+  const probe = document.createElement("canvas").getContext("2d");
+
+  const blocks = [];
+  const groups = bins.map(b => ({
+    name: b.name.trim() || "이름 없는 칸",
+    list: b.cards.map(i => ANIMALS[i][0]),
+    grey: false
+  }));
+  if (tray.length) groups.push({
+    name: "아직 나누지 않음",
+    list: tray.map(i => ANIMALS[i][0]),
+    grey: true
+  });
+
+  let h = PAD + 34 + 58 + 46;
+  groups.forEach(g => {
+    probe.font = "500 27px " + KFONT;
+    const body = g.list.length ? g.list.join("   ") : "없음";
+    const lines = wrapText(probe, body, INNER - 36);
+    blocks.push({ g, lines });
+    h += 58 + lines.length * 40 + 26;
+  });
+  h += 34 + PAD;
+
+  const dpr = 2;
+  const cv = document.createElement("canvas");
+  cv.width = W * dpr; cv.height = h * dpr;
+  const c = cv.getContext("2d");
+  c.scale(dpr, dpr);
+
+  c.fillStyle = "#EFF3EE"; c.fillRect(0, 0, W, h);
+
+  let y = PAD;
+  c.fillStyle = "#5B7063"; c.font = "600 24px " + KFONT;
+  c.fillText("무엇으로 나눴나요", PAD, y + 24);
+  y += 34 + 12;
+
+  c.fillStyle = "#1E3A28"; c.font = "700 46px " + KFONT;
+  c.fillText(crit, PAD, y + 40);
+  y += 58 + 34;
+
+  blocks.forEach(({ g, lines }) => {
+    c.fillStyle = g.grey ? "#DFE6E0" : "#C3E4E8";
+    c.beginPath(); c.roundRect(PAD, y, INNER, 48, 10); c.fill();
+    c.fillStyle = g.grey ? "#5B7063" : "#17414A";
+    c.font = "700 28px " + KFONT;
+    c.fillText(g.name, PAD + 18, y + 34);
+    c.font = "600 24px " + KFONT;
+    const cntTxt = g.list.length + "마리";
+    c.fillText(cntTxt, W - PAD - 18 - c.measureText(cntTxt).width, y + 33);
+    y += 58;
+
+    c.fillStyle = g.grey ? "#7C8A80" : "#1E3A28";
+    c.font = "500 27px " + KFONT;
+    lines.forEach(ln => { c.fillText(ln, PAD + 18, y + 27); y += 40; });
+    y += 26;
+  });
+
+  c.fillStyle = "#9DAFA2"; c.font = "500 22px " + KFONT;
+  c.fillText("멸종 위기 동물 카드 나누기", PAD, h - PAD + 4);
+
+  return cv;
+}
+
+$("doneBtn").addEventListener("click", async () => {
+  const r = buildResult();
+  lastText = r.out;
+  $("resultTitle").textContent = "‘" + r.crit + "’(으)로 나눈 결과";
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+  lastCanvas = drawResult(r.crit);
+  $("resultImg").src = lastCanvas.toDataURL("image/png");
+  $("resultDlg").showModal();
+});
+
+$("resultSave").addEventListener("click", () => {
+  const btn = $("resultSave");
+  if (!lastCanvas) return;
+  lastCanvas.toBlob(async blob => {
+    const file = new File([blob], "동물카드나누기.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; }
+      catch (err) { if (err && err.name === "AbortError") return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "동물카드나누기.png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    btn.textContent = "저장했어요";
+    setTimeout(() => { btn.textContent = "이미지로 저장하기"; }, 2200);
+  }, "image/png");
+});
+
+$("resultBack").addEventListener("click", () => $("resultDlg").close());
+
+$("resultCopy").addEventListener("click", async () => {
+  const btn = $("resultCopy");
+  try {
+    await navigator.clipboard.writeText(lastText);
+    btn.textContent = "복사했어요";
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = lastText; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); btn.textContent = "복사했어요"; }
+    catch (e2) { btn.textContent = "복사가 안 돼요"; }
+    document.body.removeChild(ta);
+  }
+  setTimeout(() => { btn.textContent = "글자 복사하기"; }, 2200);
+});
+
+$("resultNew").addEventListener("click", () => {
+  const r = buildResult();
+  history.push(r.crit + " → " + bins.map(b => (b.name.trim() || "이름 없는 칸") + " " + b.cards.length).join(" / "));
+  const list = $("pastList");
+  list.innerHTML = "";
+  history.forEach(h => { const li = document.createElement("li"); li.textContent = h; list.appendChild(li); });
+  $("past").hidden = false;
+  $("resultDlg").close();
+  $("criterion").value = "";
+  init();
+  $("criterion").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+$("resetBtn").addEventListener("click", () => {
+  if (tray.length !== ANIMALS.length && !confirm("나눈 것을 모두 지우고 처음부터 다시 할까요?")) return;
+  init();
+});
+
+/* ---------- 기준 단추 ---------- */
+let mine = [];
+
+function renderExamples() {
+  const box = $("examples");
+  box.innerHTML = "";
+  EXAMPLES.forEach(x => box.appendChild(chip(x, false)));
+  mine.forEach(x => box.appendChild(chip(x, true)));
+}
+
+function chip(text, own) {
+  const b = document.createElement("button");
+  b.textContent = text;
+  if (own) b.className = "mine";
+  b.addEventListener("click", () => { $("criterion").value = text; $("criterion").focus(); });
+  if (own) {
+    const x = document.createElement("span");
+    x.className = "x";
+    x.innerHTML = "&times;";
+    x.setAttribute("role", "button");
+    x.setAttribute("aria-label", text + " 기준 지우기");
+    x.addEventListener("click", e => {
+      e.stopPropagation();
+      mine = mine.filter(m => m !== text);
+      renderExamples();
+    });
+    b.appendChild(x);
+  }
+  return b;
+}
+
+function addCriterion() {
+  const v = $("newCrit").value.trim();
+  if (!v) return;
+  if (!EXAMPLES.includes(v) && !mine.includes(v)) mine.push(v);
+  $("newCrit").value = "";
+  renderExamples();
+  $("criterion").value = v;
+}
+$("addCrit").addEventListener("click", addCriterion);
+$("newCrit").addEventListener("keydown", e => { if (e.key === "Enter") addCriterion(); });
+
+/* ---------- 확인하기 ---------- */
+$("checkBtn").addEventListener("click", () => {
+  const crit = $("criterion").value.trim();
+  $("checkLead").textContent = crit
+    ? "‘" + crit + "’(으)로 나눈 것이 맞는지, 동물 설명을 다시 읽으며 살펴보세요."
+    : "동물 설명을 다시 읽으며 알맞은 칸에 넣었는지 살펴보세요.";
+
+  const body = $("checkBody");
+  body.innerHTML = "";
+  bins.forEach(b => {
+    const h = document.createElement("h4");
+    h.textContent = (b.name.trim() || "이름 없는 칸") + " · " + b.cards.length + "마리";
+    body.appendChild(h);
+    if (!b.cards.length) {
+      const p = document.createElement("p");
+      p.className = "none";
+      p.textContent = "아직 넣은 동물이 없어요.";
+      body.appendChild(p);
+      return;
+    }
+    const dl = document.createElement("dl");
+    b.cards.forEach(i => {
+      const dt = document.createElement("dt");
+      dt.textContent = ANIMALS[i][0];
+      const dd = document.createElement("dd");
+      dd.textContent = ANIMALS[i][1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    body.appendChild(dl);
+  });
+  if (tray.length) {
+    const h = document.createElement("h4");
+    h.textContent = "아직 나누지 않음 · " + tray.length + "마리";
+    body.appendChild(h);
+    const p = document.createElement("p");
+    p.className = "none";
+    p.textContent = tray.map(i => ANIMALS[i][0]).join(", ");
+    body.appendChild(p);
+  }
+  $("checkDlg").showModal();
+});
+$("checkClose").addEventListener("click", () => $("checkDlg").close());
+
+renderExamples();
+init();
+</script>
+</body>
+</html>
